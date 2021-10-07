@@ -21,6 +21,20 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def dartEnvironmentVariables = [
+    DEFINE_APP_NAME: 'awesomeApp',
+    DEFINE_APP_SUFFIX: 'default'
+];
+
+if (project.hasProperty('dart-defines')) {
+    dartEnvironmentVariables = dartEnvironmentVariables + project.property('dart-defines')
+            .split(',')
+            .collectEntries { entry ->
+                def pair = new String(entry.decodeBase64(), 'UTF-8').split('=')
+                [(pair.first()): pair.last()]
+            }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
@@ -53,13 +67,13 @@ android {
     productFlavors{
         company1{
             dimension "app"
-            applicationIdSuffix ".company1"
-            resValue "string", "override_name", "$System.env.APP_NAME"
+            applicationIdSuffix dartEnvironmentVariables.DEFINE_APP_SUFFIX
+            resValue "string", "override_name", dartEnvironmentVariables.DEFINE_APP_NAME
         }
         company2{
             dimension "app"
-            applicationIdSuffix ".company2"
-            resValue "string", "override_name", "$System.env.APP_NAME"
+            applicationIdSuffix dartEnvironmentVariables.DEFINE_APP_SUFFIX
+            resValue "string", "override_name", dartEnvironmentVariables.DEFINE_APP_NAME
         }
     }
 }
